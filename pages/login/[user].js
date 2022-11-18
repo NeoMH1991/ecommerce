@@ -9,7 +9,7 @@ function User() {
   //   html here
   return (
     <div>
-      <h1>Welcome {user.user} Fuck your mum too</h1>
+      <h1>Welcome {user.user} Fuck your dad too</h1>
     </div>
   );
 }
