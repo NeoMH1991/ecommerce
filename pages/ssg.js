@@ -1,46 +1,45 @@
-import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { useState, useEffect } from "react";
 
-const url = "https://pokeapi.co/api/v2/pokemon";
+const url = "https://pokeapi.co/api/v2/pokemon?limit=151";
+const headers = {
+  "Cache-Control": "no-cache",
+};
 
-function StaticSide() {
-  //State here
-  const [pokemon, setPokemon] = useState([]);
+const StaticSide = (props) => {
+  console.log(props);
 
-  //Data fetching here
-  useEffect(() => {
-    const fetchData = async () => {
-      const dataFetched = await axios.get(url);
+  return props.pokemon.map((poke) => {
+    return (
+      <div key={poke.name}>
+        <img src={poke.imgUrl} />
+        <p>{poke.name}</p>
+        <hr />
+      </div>
+    );
+  });
+};
 
-      const promises = dataFetched.data.results.map((result) => {
-        return axios.get(result.url);
-      });
-      const responses = await Promise.all(promises);
+export const getStaticProps = async () => {
+  const response = await axios.get(url, { headers });
 
-      const nameImgData = responses.map((response) => {
-        return {
-          name: response.data.name,
-          img: response.data.sprites.back_default,
-        };
-      });
-      console.log(nameImgData);
-      setPokemon(nameImgData);
+  const promises = response.data.results.map((result) => {
+    return axios.get(result.url, { headers });
+  });
+
+  const responses = await Promise.all(promises);
+
+  const pokeData = responses.map((r) => {
+    return {
+      name: r.data.name,
+      imgUrl: r.data.sprites.front_default,
     };
-    fetchData();
-  }, []);
-
-  //html here
-  return (
-    <div className="clientSideCss">
-      {pokemon.map((poke) => [
-        <div key={poke.name}>
-          <img src={poke.img} alt="" />
-          <p>{poke.name}</p>
-          <hr />
-        </div>,
-      ])}
-    </div>
-  );
-}
+  });
+  return {
+    props: {
+      pokemon: pokeData,
+    },
+  };
+};
 
 export default StaticSide;
